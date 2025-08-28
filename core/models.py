@@ -17,6 +17,7 @@ class JobPosting(models.Model):
     title = models.CharField(max_length=128)
     description = models.TextField()
     status = models.CharField(max_length=16, choices=JOB_STATUS_CHOICES, default='open')
+    location = models.CharField(max_length=128)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='job_postings')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
