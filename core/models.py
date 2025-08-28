@@ -6,6 +6,12 @@ JOB_STATUS_CHOICES = [
     ('closed', 'Closed'),
 ]
 
+LOCATION_CHOICES = [
+    ('remote', 'Remote'),
+    ('on_site', 'On Site'),
+    ('hybrid', 'Hybrid'),
+]
+
 APPLICATION_STATUS_CHOICES = [
     ('applied', 'Applied'),
     ('interviewing', 'Interviewing'),
@@ -17,7 +23,7 @@ class JobPosting(models.Model):
     title = models.CharField(max_length=128)
     description = models.TextField()
     status = models.CharField(max_length=16, choices=JOB_STATUS_CHOICES, default='open')
-    location = models.CharField(max_length=128)
+    location = models.CharField(max_length=16, choices=LOCATION_CHOICES, default='hybrid')
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='job_postings')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
