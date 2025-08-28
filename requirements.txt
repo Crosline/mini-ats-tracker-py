@@ -1,0 +1,5 @@
+Django==5.2.5
+djangorestframework
+djangorestframework-simplejwt
+python-decouple
+psycopg2-binary
