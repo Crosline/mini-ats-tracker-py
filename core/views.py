@@ -1,8 +1,24 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, permissions, generics
 from drf_spectacular.utils import extend_schema_view, extend_schema
+from django.contrib.auth.models import User
 from .models import JobPosting, Applicant, Application
-from .serializers import JobPostingSerializer, ApplicantSerializer, ApplicationSerializer
+from .serializers import JobPostingSerializer, ApplicantSerializer, ApplicationSerializer, UserRegistrationSerializer
 
+# --- Registration ViewSet ---
+@extend_schema_view(
+    list=extend_schema(tags=['Registration']),
+    retrieve=extend_schema(tags=['Registration']),
+    create=extend_schema(tags=['Registration']),
+    update=extend_schema(tags=['Registration']),
+    partial_update=extend_schema(tags=['Registration']),
+    destroy=extend_schema(tags=['Registration']),
+)
+class UserRegistrationView(generics.CreateAPIView):
+    queryset = User.objects.all()
+    serializer_class = UserRegistrationSerializer
+    permission_classes = [permissions.AllowAny]
+
+# --- Core Model ViewSets ---
 @extend_schema_view(
     list=extend_schema(tags=['JobPosting']),
     retrieve=extend_schema(tags=['JobPosting']),
@@ -14,9 +30,13 @@ from .serializers import JobPostingSerializer, ApplicantSerializer, ApplicationS
 class JobPostingViewSet(viewsets.ModelViewSet):
     queryset = JobPosting.objects.all().order_by('-created_at')
     serializer_class = JobPostingSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
     def perform_create(self, serializer):
         serializer.save(created_by=self.request.user)
+        
+    def get_queryset(self):
+        return JobPosting.objects.filter(created_by=self.request.user).order_by('-created_at')
 
 
 @extend_schema_view(
@@ -30,6 +50,7 @@ class JobPostingViewSet(viewsets.ModelViewSet):
 class ApplicantViewSet(viewsets.ModelViewSet):
     queryset = Applicant.objects.all()
     serializer_class = ApplicantSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
 
 @extend_schema_view(
@@ -42,9 +63,10 @@ class ApplicantViewSet(viewsets.ModelViewSet):
 )
 class ApplicationViewSet(viewsets.ModelViewSet):
     serializer_class = ApplicationSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
-        queryset = Application.objects.all()
+        queryset = Application.objects.filter(job__created_by=self.request.user).order_by('-job__updated_at')
         job_id = self.request.query_params.get('job_id')
         applicant_name = self.request.query_params.get('applicant')
 
